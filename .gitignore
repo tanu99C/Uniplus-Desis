@@ -1,0 +1,20 @@
+
+# Compiled JavaScript files
+lib/**/*.js
+lib/**/*.js.map
+
+# TypeScript v1 declaration files
+typings/
+
+# Node.js dependency directory
+node_modules/
+*.local
+functions/
+
+# Ignore all log files
+*.log
+firebase-debug.log
+
+# Ignore temporary files inside src
+src/node_modules/
+.expo

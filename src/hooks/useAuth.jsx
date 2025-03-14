@@ -1,4 +1,12 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { auth, db } from "../lib/firebaseConfig"; 
+import { 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged 
+} from "firebase/auth";
+import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 
 const AuthContext = createContext();
 
@@ -7,112 +15,105 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Load user from localStorage on initial render
+  // Fetch user details when auth state changes
   useEffect(() => {
-    const storedUser = localStorage.getItem("uniplus_user");
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        console.error("Error parsing stored user data:", e);
-        localStorage.removeItem("uniplus_user");
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        const userDocRef = doc(db, "loginPage", "userDetails");
+        const userSnap = await getDoc(userDocRef);
+
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          const userInfo = userData[`user_${currentUser.uid}`];
+
+          if (userInfo) {
+            setUser(userInfo);
+          } else {
+            setUser(null);
+          }
+        } else {
+          setUser(null);
+        }
+      } else {
+        setUser(null);
       }
-    }
-    setLoading(false);
+      setLoading(false);
+    });
+    return unsubscribe;
   }, []);
 
-  // ✅ FIXED: login function (Mock-based)
-  const login = async (email, password) => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API delay
-
-      if (email && password) {
-        const isAdminUser = email.includes("admin"); // ✅ Check if admin
-        const userData = {
-          id: "user123",
-          name: email.split("@")[0],
-          email,
-          role: isAdminUser ? "admin" : "user",
-        };
-
-        setUser(userData);
-        localStorage.setItem("uniplus_user", JSON.stringify(userData));
-
-        console.log("User logged in:", userData); // ✅ Debugging
-        return userData;
-      } else {
-        throw new Error("Email and password are required");
-      }
-    } catch (err) {
-      setError(err.message || "An error occurred during login");
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ✅ FIXED: signup function (Mock-based)
+  // Signup function
   const signup = async (name, email, password) => {
     setLoading(true);
     setError(null);
-
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API delay
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      const userDocRef = doc(db, "loginPage", "userDetails");
+      const userSnap = await getDoc(userDocRef);
 
-      if (name && email && password) {
-        const isAdminUser = email.includes("admin");
-        const userData = {
-          id: `user_${Date.now()}`,
-          name,
-          email,
-          role: isAdminUser ? "admin" : "user",
-        };
-
-        setUser(userData);
-        localStorage.setItem("uniplus_user", JSON.stringify(userData));
-
-        console.log("User signed up:", userData); // ✅ Debugging
-        return userData;
+      if (userSnap.exists()) {
+        await updateDoc(userDocRef, {
+          [`user_${user.uid}`]: { name, email, uid: user.uid }
+        });
       } else {
-        throw new Error("Name, email, and password are required");
+        await setDoc(userDocRef, {
+          [`user_${user.uid}`]: { name, email, uid: user.uid }
+        });
       }
+
+      setUser({ name, email, uid: user.uid });
     } catch (err) {
-      setError(err.message || "An error occurred during signup");
+      setError(err.message);
       throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Logout function
-  const logout = () => {
+  // Login function
+  const login = async (email, password) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userId = userCredential.user.uid;
+
+      const userDocRef = doc(db, "loginPage", "userDetails");
+      const userSnap = await getDoc(userDocRef);
+
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        const userInfo = userData[`user_${userId}`];
+
+        if (userInfo) {
+          setUser(userInfo);
+        } else {
+          throw new Error("User details not found in Firestore.");
+        }
+      } else {
+        throw new Error("User document does not exist.");
+      }
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Logout function
+  const logout = async () => {
+    await signOut(auth);
     setUser(null);
-    localStorage.removeItem("uniplus_user");
-    console.log("User logged out"); // ✅ Debugging
   };
 
-  // ✅ Context value with admin check
-  const value = {
-    user,
-    loading,
-    error,
-    login,
-    signup,
-    logout,
-    isAuthenticated: !!user,
-    isAdmin: user?.role?.toLowerCase() === "admin", // ✅ Ensures case consistency
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, loading, error, signup, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-};
+export const useAuth = () => useContext(AuthContext);
