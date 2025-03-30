@@ -11,6 +11,7 @@ import SignUp from "./pages/SignUp";
 import Announcements from "./pages/Announcements";
 import Marketplace from "./pages/Marketplace";
 import LostFound from "./pages/LostFound";
+import Notes from "./pages/Notes";
 import HelpCenter from "./pages/HelpCenter";
 import Privacy from "./pages/Privacy";
 import About from "./pages/About";
@@ -38,6 +39,7 @@ const App = () => (
                 <Route path="/announcements" element={<Announcements />} />
                 <Route path="/marketplace" element={<Marketplace />} />
                 <Route path="/lost-found" element={<LostFound />} />
+                <Route path ="/notes" element = {<Notes/> }/>
                 <Route path="/help" element={<HelpCenter />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/about" element={<About />} />

@@ -4,7 +4,7 @@ import Container from '../components/ui/Container';
 
 const Privacy = () => {
   return (
-    <div className="min-h-screen pt-24 pb-16">
+    <div className="min-h-screen pt-24 pb-16 text-white">
       <Container>
         <div className="max-w-3xl mx-auto">
           <h1 className="text-3xl font-bold mb-2">Privacy Policy</h1>

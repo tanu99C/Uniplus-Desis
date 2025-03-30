@@ -56,21 +56,40 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-uniplus-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Container size="sm" className="animate-scale-in">
-        <div className="flex justify-center mb-8">
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="h-10 w-10 rounded-lg bg-uniplus-600 flex items-center justify-center">
+    <div
+      className="
+        signup-page
+        relative
+        min-h-screen
+        flex
+        items-center
+        justify-center
+        bg-uniplus-50
+        py-12
+        px-4
+        sm:px-6
+        lg:px-8
+        overflow-hidden
+        bubble-background
+        neon-lights-anim
+      "
+    >
+      <Container size="sm" className="animate-scale-in signup-container shadow-2xl relative z-10">
+       
+        <div className="flex justify-center mb-8 mt-4 neon-header-text"> 
+          <Link to="/" className="flex items-center space-x-2 hover:opacity-90 transition-opacity">
+            <div className="h-10 w-10 rounded-lg bg-uniplus-600 flex items-center justify-center neon-logo-shadow">
               <span className="text-white font-bold text-xl">U+</span>
             </div>
-            <span className="font-bold text-2xl">UniPlus</span>
+            <span className="font-bold text-2xl neon-text">UniPlus</span>
           </Link>
         </div>
 
-        <Card className="mx-auto w-full max-w-md">
+
+        <Card className="mx-auto w-full max-w-md neon-card-shadow">
           <Card.Header>
-            <Card.Title className="text-2xl text-center">Create an account</Card.Title>
-            <Card.Description className="text-center">
+            <Card.Title className="text-2xl text-center neon-title">Create an account</Card.Title>
+            <Card.Description className="text-center neon-description">
               Sign up to get started with UniPlus
             </Card.Description>
           </Card.Header>
@@ -78,7 +97,7 @@ const Signup = () => {
           <Card.Content>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium mb-1">
+                <label htmlFor="name" className="block text-sm font-medium mb-1 neon-label">
                   Name
                 </label>
                 <input
@@ -87,13 +106,26 @@ const Signup = () => {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 border border-border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-uniplus-500 focus:border-uniplus-500"
+                  className="
+                    w-full
+                    px-3
+                    py-2
+                    border
+                    border-border
+                    rounded-md
+                    shadow-sm
+                    focus:outline-none
+                    focus:ring-2
+                    focus:ring-uniplus-500
+                    focus:border-uniplus-500
+                    neon-input
+                  "
                   placeholder="Your name"
                 />
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium mb-1">
+                <label htmlFor="email" className="block text-sm font-medium mb-1 neon-label">
                   Email address
                 </label>
                 <input
@@ -102,13 +134,26 @@ const Signup = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 border border-border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-uniplus-500 focus:border-uniplus-500"
+                  className="
+                    w-full
+                    px-3
+                    py-2
+                    border
+                    border-border
+                    rounded-md
+                    shadow-sm
+                    focus:outline-none
+                    focus:ring-2
+                    focus:ring-uniplus-500
+                    focus:border-uniplus-500
+                    neon-input
+                  "
                   placeholder="your@email.com"
                 />
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium mb-1">
+                <label htmlFor="password" className="block text-sm font-medium mb-1 neon-label">
                   Password
                 </label>
                 <input
@@ -117,32 +162,48 @@ const Signup = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-uniplus-500 focus:border-uniplus-500"
+                  className="
+                    w-full
+                    px-3
+                    py-2
+                    border
+                    border-border
+                    rounded-md
+                    shadow-sm
+                    focus:outline-none
+                    focus:ring-2
+                    focus:ring-uniplus-500
+                    focus:border-uniplus-500
+                    neon-input
+                  "
                   placeholder="••••••••"
                 />
               </div>
 
               <div className="pt-2">
-                <Button type="submit" className="w-full" disabled={loading}>
+                <Button type="submit" className="w-full neon-button" disabled={loading}>
                   {loading ? "Signing up..." : "Sign Up"}
                 </Button>
               </div>
             </form>
           </Card.Content>
 
-          <div className="text-center mt-4 pb-4">
+          <div className="text-center mt-4 pb-4 text-white">
             <p className="text-sm text-muted-foreground">
               Already have an account?{" "}
               <Link
                 to="/login"
                 className="font-medium text-uniplus-600 hover:text-uniplus-500 transition-colors"
               >
-                Sign in
+                Log in
               </Link>
             </p>
           </div>
         </Card>
       </Container>
+
+      {/* Bubbles overlay for the floating animation */}
+      <div className="bubbles-overlay"></div>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 export default {
 	darkMode: ["class"],
 	content: [
@@ -17,6 +16,9 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				inter: ["Inter", "sans-serif"], // ✅ Added Inter font
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',

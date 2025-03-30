@@ -1,441 +1,390 @@
+import React, { useEffect, useState } from "react";
+import { Timestamp } from "firebase/firestore"; 
+import { db, auth, storage } from "../lib/firebaseConfig";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  getDoc
+} from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { onAuthStateChanged } from "firebase/auth";
 
-import React, { useState, useEffect } from 'react';
-import Container from '../components/ui/Container';
-import Card from '../components/ui/Card';
-import Button from '../components/ui/Button';
-import { useAuth } from '../hooks/useAuth';
-import { formatDate } from '../lib/utils';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { toast } from '@/hooks/use-toast';
-import { Image, X } from "lucide-react";
+import "./Announcements.css";
+
+const categories = ["All", "Academic", "Events", "General", "Other"];
 
 const Announcements = () => {
-  const { user, isAdmin } = useAuth();
   const [announcements, setAnnouncements] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [showNewForm, setShowNewForm] = useState(false);
-  const [expandedAnnouncement, setExpandedAnnouncement] = useState(null);
+  const [filteredAnnouncements, setFilteredAnnouncements] = useState([]);
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [showForm, setShowForm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Tracks if the current user is an admin
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Form State
   const [newAnnouncement, setNewAnnouncement] = useState({
-    title: '',
-    category: 'Events',
-    content: '',
-    imageUrl: ''
+    title: "",
+    content: "",
+    author: "",
+    category: "",
+    imageUrl: "",
+    date: "",
   });
-  
-  // Mock announcements data
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 1) SIMPLE ADMIN CHECK: If email == "tanuadmin@gmail.com"
+  // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setAnnouncements([
-        {
-          id: '1',
-          title: 'Spring Semester Registration Open',
-          category: 'Academic',
-          content: 'Registration for Spring Semester courses is now open. All students must register by December 15th to secure their preferred classes.',
-          date: '2023-11-15T10:00:00Z',
-          author: 'Academic Office',
-          imageUrl: 'https://images.unsplash.com/photo-1517486808906-6ca8b3f8e1c1?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
-        },
-        {
-          id: '2',
-          title: 'Campus Concert: The University Band',
-          category: 'Events',
-          content: 'Join us for a night of music as The University Band performs their annual concert in the Main Auditorium. Free entry for all students with ID.',
-          date: '2023-11-18T14:30:00Z',
-          author: 'Student Activities',
-          imageUrl: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
-        },
-        {
-          id: '3',
-          title: 'Library Hours Extended During Finals Week',
-          category: 'Notices',
-          content: 'The university library will be open 24/7 during finals week to provide students with a quiet place to study. Additional study rooms will be available on a first-come, first-served basis.',
-          date: '2023-11-20T09:15:00Z',
-          author: 'Library Services',
-          imageUrl: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
-        },
-        {
-          id: '4',
-          title: 'Scholarship Applications Due',
-          category: 'Opportunities',
-          content: 'Applications for the Presidential Merit Scholarship are due by the end of the month. This scholarship covers full tuition for the academic year.',
-          date: '2023-11-22T11:45:00Z',
-          author: 'Financial Aid Office',
-          imageUrl: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
-        },
-        {
-          id: '5',
-          title: 'Campus Maintenance: West Building Closure',
-          category: 'Notices',
-          content: 'The West Building will be closed for maintenance from November 25th to November 30th. All classes scheduled in this building will be relocated.',
-          date: '2023-11-23T13:20:00Z',
-          author: 'Facilities Management',
-          imageUrl: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
-        }
-      ]);
-    }, 500);
-  }, []);
-  
-  const categories = [
-    { id: 'all', name: 'All' },
-    { id: 'Academic', name: 'Academic' },
-    { id: 'Events', name: 'Events' },
-    { id: 'Notices', name: 'Notices' },
-    { id: 'Opportunities', name: 'Opportunities' }
-  ];
-  
-  const filteredAnnouncements = selectedCategory === 'all'
-    ? announcements
-    : announcements.filter(a => a.category === selectedCategory);
-  
-  const handleNewAnnouncementChange = (e) => {
-    const { name, value } = e.target;
-    setNewAnnouncement(prev => ({ ...prev, [name]: value }));
-  };
-  
-  const handleCreateAnnouncement = (e) => {
-    e.preventDefault();
-    
-    const newItem = {
-      id: `new-${Date.now()}`,
-      title: newAnnouncement.title,
-      category: newAnnouncement.category,
-      content: newAnnouncement.content,
-      date: new Date().toISOString(),
-      author: user?.name || 'Anonymous',
-      imageUrl: newAnnouncement.imageUrl || 'https://images.unsplash.com/photo-1616587894289-86480e533129?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
-    };
-    
-    setAnnouncements(prev => [newItem, ...prev]);
-    setNewAnnouncement({
-      title: '',
-      category: 'Events',
-      content: '',
-      imageUrl: ''
+    // Listen for user login state changes
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user && user.email === "tanuadmin@gmail.com") {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
     });
-    setShowNewForm(false);
-    
-    toast({
-      title: "Announcement Created",
-      description: "Your announcement has been published",
-      variant: "default"
+    return () => unsubscribe();
+  }, []);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 2) FETCH ANNOUNCEMENTS
+  // ─────────────────────────────────────────────────────────────────────────────
+  const fetchAnnouncements = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "announcements"));
+
+      if (querySnapshot.empty) {
+        console.warn("No announcements found in Firestore!");
+      }
+
+      // Map over all announcements
+      const announcementsArray = await Promise.all(
+        querySnapshot.docs.map(async (announcementDoc) => {
+          const announcementData = announcementDoc.data();
+          let authorName = "Unknown Author";
+
+          // Fetch author details if userId exists
+          if (announcementData.userId) {
+            try {
+              const userDocRef = doc(db, "loginPage", "userDetails"); // Assuming 'users' stores user info
+              // eslint-disable-next-line no-undef
+              const userSnapshot = await getDoc(userDocRef);
+
+              if (userSnapshot.exists()) {
+                const userData =
+                  userSnapshot.data()[`user_${announcementData.userId}`];
+                authorName = userSnapshot.data().name || "Unknown Author";
+              }
+            } catch (error) {
+              console.error("Error fetching author details:", error);
+            }
+          }
+
+          return { id: announcementDoc.id, ...announcementData, authorName };
+        })
+      );
+
+      setAnnouncements(announcementsArray); // Update state with fetched announcements
+    } catch (error) {
+      console.error("Error fetching announcements:", error);
+    }
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 3) RENDER A SINGLE ANNOUNCEMENT (Unused in final .map, but preserved)
+  // ─────────────────────────────────────────────────────────────────────────────
+  const renderAnnouncement = (announcements) => {
+    return (
+      <div
+        key={announcements.id}
+        className="bg-white shadow-md rounded-lg overflow-hidden border p-4 w-80"
+      >
+        {/* Announcement Image (Optional) */}
+        {announcements.imageUrl && (
+          <div className="relative">
+            <img
+              src={announcements.imageUrl}
+              alt={announcements.title}
+              className="w-full h-48 object-cover rounded-lg"
+            />
+          </div>
+        )}
+
+        {/* Announcement Title */}
+        <h3 className="text-lg font-bold text-gray-800 mt-2">
+          {announcements.title}
+        </h3>
+
+        {/* Author & Date */}
+        <p className="text-sm text-gray-600">
+          <strong>By:</strong> {announcements.author || "Unknown"}
+        </p>
+        <p className="text-sm text-gray-600">
+          <strong>Date:</strong>{" "}
+          {announcements.date?.toDate?.().toLocaleDateString() || "Not Available"}
+        </p>
+        {/* Category */}
+        <p className="text-sm text-gray-500 mt-1">
+          <strong>Category:</strong> {announcements.category}
+        </p>
+
+        {/* Announcement Content */}
+        <p className="text-sm text-gray-500 mt-2">{announcements.content}</p>
+
+        {/* Delete Button (Only for the Author OR an Admin) */}
+        {(auth.currentUser?.uid === announcements.userId || isAdmin) && (
+          <button
+            onClick={() => handleDeleteAnnouncement(announcements.id)}
+            className="text-red-500 font-bold mt-2"
+          >
+            Delete
+          </button>
+        )}
+      </div>
+    );
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 4) LOAD ANNOUNCEMENTS ON MOUNT
+  // ─────────────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    fetchAnnouncements();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (announcements.date) {
+      setNewAnnouncement((prev) => ({
+        ...prev,
+        date: announcements.date.toDate().toISOString().split("T")[0], // Convert to "YYYY-MM-DD"
+      }));
+    }
+  }, [announcements]);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 5) FILTER ANNOUNCEMENTS BY CATEGORY
+  // ─────────────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (activeCategory === "All") {
+      setFilteredAnnouncements(announcements);
+    } else {
+      setFilteredAnnouncements(
+        announcements.filter((item) => item.category === activeCategory)
+      );
+    }
+  }, [activeCategory, announcements]);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 6) FORM HANDLERS
+  // ─────────────────────────────────────────────────────────────────────────────
+  const handleInputChange = (e) => {
+    setNewAnnouncement({
+      ...newAnnouncement,
+      [e.target.name]: e.target.value,
     });
   };
 
-  const handleDeleteAnnouncement = (id) => {
-    setAnnouncements(prev => prev.filter(announcement => announcement.id !== id));
-    
-    toast({
-      title: "Announcement Deleted",
-      description: "The announcement has been removed",
-      variant: "default"
-    });
-    
-    // Close the expanded view if the deleted announcement was expanded
-    if (expandedAnnouncement && expandedAnnouncement.id === id) {
-      setExpandedAnnouncement(null);
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setNewAnnouncement({
+        ...newAnnouncement,
+        imageUrl: URL.createObjectURL(file),
+      });
     }
   };
-  
-  const truncateContent = (content, maxLength = 150) => {
-    if (content.length <= maxLength) return content;
-    return content.slice(0, maxLength) + '...';
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 7) SUBMIT NEW ANNOUNCEMENT
+  // ─────────────────────────────────────────────────────────────────────────────
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    const announcementToSave = {
+      ...newAnnouncement,
+      date: Timestamp.fromDate(new Date(newAnnouncement.date)), // Convert "YYYY-MM-DD" to Firestore Timestamp
+    };
+
+    try {
+      let imageUrl = "";
+
+      // Upload Image if provided
+      if (newAnnouncement.imageUrl) {
+        const imageRef = ref(storage, `images/${Date.now()}`);
+        const response = await fetch(newAnnouncement.imageUrl);
+        const blob = await response.blob();
+        await uploadBytes(imageRef, blob);
+        imageUrl = await getDownloadURL(imageRef);
+      }
+
+      await addDoc(collection(db, "announcements"), {
+        ...newAnnouncement,
+        imageUrl, // Store uploaded image URL
+        userId: auth.currentUser.uid,
+      });
+      alert("Announcement Added Successfully!");
+      setShowForm(false);
+
+      // Reset form state
+      setNewAnnouncement({
+        title: "",
+        content: "",
+        author: "",
+        category: "",
+        imageUrl: "",
+        date: new Date().toISOString().split("T")[0],
+      });
+
+      fetchAnnouncements(); // Refresh announcements
+    } catch (error) {
+      console.error("Error adding announcement:", error);
+      alert("Failed to add announcement");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-  
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 8) DELETE AN ANNOUNCEMENT
+  // ─────────────────────────────────────────────────────────────────────────────
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this announcement?")) {
+      try {
+        await deleteDoc(doc(db, "announcements", id));
+        alert("Announcement Deleted!");
+        fetchAnnouncements(); // Refresh announcements
+      } catch (error) {
+        console.error("Error deleting announcement:", error);
+        alert("Failed to delete announcement");
+      }
+    }
+  };
+
+  // ALIAS for "renderAnnouncement" delete button logic (kept to avoid removing code)
+  const handleDeleteAnnouncement = (id) => {
+    handleDelete(id);
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 9) RENDER
+  // ─────────────────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen pt-24 pb-16">
-      <Container>
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Announcements</h1>
-            <p className="text-muted-foreground">
-              Stay updated with the latest campus news and events
-            </p>
-          </div>
-          
-          {isAdmin && (
-            <Button 
-              variant="primary" 
-              className="mt-4 md:mt-0" 
-              onClick={() => setShowNewForm(!showNewForm)}
-            >
-              {showNewForm ? 'Cancel' : 'Create Announcement'}
-            </Button>
-          )}
-        </div>
-        
-        {/* New Announcement Form */}
-        {showNewForm && (
-          <Card className="mb-8 animate-fade-in">
-            <Card.Header>
-              <Card.Title>Create New Announcement</Card.Title>
-              <Card.Description>
-                Fill out the form below to publish a new announcement
-              </Card.Description>
-            </Card.Header>
-            
-            <Card.Content>
-              <form onSubmit={handleCreateAnnouncement} className="space-y-4">
-                <div>
-                  <label htmlFor="title" className="block text-sm font-medium mb-1">
-                    Title
-                  </label>
-                  <input
-                    id="title"
-                    name="title"
-                    type="text"
-                    required
-                    value={newAnnouncement.title}
-                    onChange={handleNewAnnouncementChange}
-                    className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-uniplus-500"
-                    placeholder="Announcement title"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="category" className="block text-sm font-medium mb-1">
-                    Category
-                  </label>
-                  <select
-                    id="category"
-                    name="category"
-                    required
-                    value={newAnnouncement.category}
-                    onChange={handleNewAnnouncementChange}
-                    className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-uniplus-500"
-                  >
-                    {categories.filter(c => c.id !== 'all').map(category => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div>
-                  <label htmlFor="content" className="block text-sm font-medium mb-1">
-                    Content
-                  </label>
-                  <textarea
-                    id="content"
-                    name="content"
-                    rows={5}
-                    required
-                    value={newAnnouncement.content}
-                    onChange={handleNewAnnouncementChange}
-                    className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-uniplus-500"
-                    placeholder="Announcement details..."
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="imageUrl" className="block text-sm font-medium mb-1">
-                    Image URL (optional)
-                  </label>
-                  <input
-                    id="imageUrl"
-                    name="imageUrl"
-                    type="url"
-                    value={newAnnouncement.imageUrl}
-                    onChange={handleNewAnnouncementChange}
-                    className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-uniplus-500"
-                    placeholder="https://example.com/image.jpg"
-                  />
-                </div>
-                
-                <div className="flex justify-end space-x-3 pt-2">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setShowNewForm(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" variant="primary">
-                    Publish Announcement
-                  </Button>
-                </div>
-              </form>
-            </Card.Content>
-          </Card>
-        )}
-        
-        {/* Category Filters */}
-        <div className="mb-6 overflow-x-auto">
-          <div className="flex space-x-2 pb-2">
-            {categories.map(category => (
-              <button
-                key={category.id}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
-                  selectedCategory === category.id
-                    ? 'bg-uniplus-600 text-white'
-                    : 'bg-muted hover:bg-muted/80 text-foreground'
-                }`}
-                onClick={() => setSelectedCategory(category.id)}
-              >
-                {category.name}
-              </button>
+    <div className="container futuristic-container">
+
+      {/* Category Filter */}
+      <div className="category-filter">
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            className={`category-filter-button mtab-button ${activeCategory === cat ? "active" : ""}`}
+
+            onClick={() => setActiveCategory(cat)}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Add Announcement Button (Visible ONLY if isAdmin is true) */}
+      {isAdmin && (
+        <button className="add-button" onClick={() => setShowForm(!showForm)}>
+          {showForm ? "Cancel" : "➕ Add Announcement"}
+        </button>
+      )}
+
+      {/* Announcement Form */}
+      {showForm && (
+        <form className="announcement-form" onSubmit={handleSubmit}>
+          <h2>Add New Announcement</h2>
+          <input
+            type="text"
+            name="title"
+            placeholder="Title"
+            value={newAnnouncement.title}
+            onChange={handleInputChange}
+            required
+          />
+          <textarea
+            name="content"
+            placeholder="Content"
+            value={newAnnouncement.content}
+            onChange={handleInputChange}
+            required
+          />
+          <input
+            type="text"
+            name="author"
+            placeholder="Author"
+            value={newAnnouncement.author}
+            onChange={handleInputChange}
+            required
+          />
+          <select
+            name="category"
+            value={newAnnouncement.category}
+            onChange={handleInputChange}
+            required
+          >
+            <option value="">Select Category</option>
+            {categories.slice(1).map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
             ))}
-          </div>
-        </div>
-        
-        {/* Announcements List */}
-        {filteredAnnouncements.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-muted-foreground">No announcements found.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-6">
-            {filteredAnnouncements.map(announcement => (
-              <Card 
-                key={announcement.id} 
-                className="animate-scale-in" 
-                animation={true}
-              >
-                <div className="flex flex-col md:flex-row">
-                  {/* Image */}
-                  {announcement.imageUrl && (
-                    <div className="md:w-1/3 rounded-t-lg md:rounded-l-lg md:rounded-t-none overflow-hidden">
-                      <img 
-                        src={announcement.imageUrl} 
-                        alt={announcement.title}
-                        className="h-48 md:h-full w-full object-cover"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = 'https://images.unsplash.com/photo-1616587894289-86480e533129?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
-                        }}
-                      />
-                    </div>
-                  )}
-                  
-                  {/* Content */}
-                  <div className={`flex-1 p-6 ${announcement.imageUrl ? 'md:p-6' : 'p-6'}`}>
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-3">
-                      <div>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-uniplus-100 text-uniplus-800 mb-2">
-                          {announcement.category}
-                        </span>
-                        <h3 className="text-xl font-semibold leading-tight">
-                          {announcement.title}
-                        </h3>
-                      </div>
-                      <div className="text-sm text-muted-foreground mt-1 md:mt-0">
-                        {formatDate(announcement.date)}
-                      </div>
-                    </div>
-                    
-                    <p className="text-muted-foreground mt-2">
-                      {expandedAnnouncement?.id === announcement.id
-                        ? announcement.content
-                        : truncateContent(announcement.content)}
-                    </p>
-                    
-                    <div className="mt-4 flex justify-between items-center">
-                      <span className="text-sm font-medium">
-                        By {announcement.author}
-                      </span>
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => {
-                            if (expandedAnnouncement?.id === announcement.id) {
-                              setExpandedAnnouncement(null);
-                            } else {
-                              setExpandedAnnouncement(announcement);
-                            }
-                          }}
-                        >
-                          {expandedAnnouncement?.id === announcement.id ? 'Show Less' : 'Read More'}
-                        </Button>
-                        
-                        {isAdmin && (
-                          <Button 
-                            variant="outline" 
-                            size="icon"
-                            onClick={() => handleDeleteAnnouncement(announcement.id)}
-                            className="text-red-500 hover:bg-red-50"
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-        
-        {/* Full Announcement Dialog */}
-        <Dialog 
-          open={expandedAnnouncement !== null} 
-          onOpenChange={(open) => !open && setExpandedAnnouncement(null)}
-        >
-          {expandedAnnouncement && (
-            <DialogContent className="max-w-3xl">
-              <DialogHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-uniplus-100 text-uniplus-800 mb-2">
-                      {expandedAnnouncement.category}
-                    </span>
-                    <DialogTitle className="text-2xl">
-                      {expandedAnnouncement.title}
-                    </DialogTitle>
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    {formatDate(expandedAnnouncement.date)}
-                  </div>
-                </div>
-                <DialogDescription>
-                  By {expandedAnnouncement.author}
-                </DialogDescription>
-              </DialogHeader>
-              
-              {expandedAnnouncement.imageUrl && (
-                <div className="rounded-lg overflow-hidden my-4">
-                  <img 
-                    src={expandedAnnouncement.imageUrl} 
-                    alt={expandedAnnouncement.title}
-                    className="w-full h-64 object-cover"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'https://images.unsplash.com/photo-1616587894289-86480e533129?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
-                    }}
-                  />
-                </div>
-              )}
-              
-              <div className="my-4 space-y-4 whitespace-pre-line">
-                {expandedAnnouncement.content.split('\n').map((paragraph, i) => (
-                  <p key={i}>{paragraph}</p>
-                ))}
-              </div>
-              
-              <DialogFooter>
-                {isAdmin && (
-                  <Button 
-                    variant="destructive" 
-                    onClick={() => {
-                      handleDeleteAnnouncement(expandedAnnouncement.id);
-                    }}
-                  >
-                    Delete Announcement
-                  </Button>
-                )}
-                <Button 
-                  variant="outline" 
-                  onClick={() => setExpandedAnnouncement(null)}
+          </select>
+          <input
+            type="file"
+            onChange={handleImageChange}
+            disabled={isSubmitting}
+          />
+          <input
+            type="date"
+            name="date"
+            value={newAnnouncement.date}
+            onChange={handleInputChange}
+          />
+          <button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Submitting..." : "Submit Announcement"}
+          </button>
+        </form>
+      )}
+
+      {/* Announcement List */}
+      <div className="announcement-list animated-bg">
+        {filteredAnnouncements.length > 0 ? (
+          filteredAnnouncements.map((item) => (
+            <div key={item.id} className="announcement-item glassy-announcement">
+              <h3>{item.title}</h3>
+              <p>
+                <strong>{item.author}</strong> |{" "}
+                {item.date?.seconds
+                  ? new Date(item.date.seconds * 1000).toLocaleDateString()
+                  : "Not Available"}
+              </p>
+              <p>{item.content}</p>
+              {item.imageUrl && <img src={item.imageUrl} alt="Announcement" />}
+
+              {/* Delete Button (Visible if user is admin OR the announcement author) */}
+              {(isAdmin || auth.currentUser?.uid === item.userId) && (
+                <button
+                  className="delete-button"
+                  onClick={() => handleDelete(item.id)}
                 >
-                  Close
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          )}
-        </Dialog>
-      </Container>
+                  ❌ Delete
+                </button>
+              )}
+            </div>
+          ))
+        ) : (
+          <p>No announcements found.</p>
+        )}
+      </div>
     </div>
   );
 };

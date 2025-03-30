@@ -12,7 +12,7 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      setIsScrolled(window.scrollY > 50); // Trigger transition after scrolling 50px
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -27,6 +27,7 @@ const Navbar = () => {
     { name: "Announcements", path: "/announcements" },
     { name: "Marketplace", path: "/marketplace" },
     { name: "Lost & Found", path: "/lost-found" },
+    { name: "Notes", path: "/notes" },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -34,17 +35,19 @@ const Navbar = () => {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? "py-3 bg-white/90 backdrop-blur-md shadow-sm" : "py-5 bg-transparent"
+        isScrolled ? "bg-black/90 shadow-md py-3" : "bg-transparent py-5"
       }`}
     >
       <Container>
         <nav className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-lg bg-uniplus-600 flex items-center justify-center">
-              <span className="text-white font-bold text-lg">U+</span>
+            <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center">
+              <span className="text-black font-bold text-lg">U+</span>
             </div>
-            <span className="font-bold text-xl hidden sm:inline-block">UniPlus</span>
+            <span className="font-bold text-xl text-white hidden sm:inline-block">
+              UniPlus
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -53,10 +56,8 @@ const Navbar = () => {
               <li key={link.name}>
                 <Link
                   to={link.path}
-                  className={`text-sm font-medium transition-colors ${
-                    isActive(link.path)
-                      ? "text-uniplus-600 font-semibold"
-                      : "text-foreground/80 hover:text-foreground"
+                  className={`text-sm font-medium text-white transition-colors ${
+                    isActive(link.path) ? "font-semibold text-lg " : "hover:opacity-90"
                   }`}
                 >
                   {link.name}
@@ -74,28 +75,48 @@ const Navbar = () => {
                     <Button variant="outline" size="sm">Admin</Button>
                   </Link>
                 )}
-                <div className="text-sm font-medium">
+                <div className="text-sm font-medium text-white">
                   {user?.name || "User"}
                 </div>
-                <Button variant="outline" size="sm" onClick={logout}>
+                <Button
+                  variant="outline"
+                  className="text-white border-white px-3 py-1 text-sm font-bold transition-all duration-300 hover:scale-105 hover:text-white"
+                  size="sm"
+                  onClick={logout}
+                >
                   Logout
-                </Button>
+              </Button>
+
               </div>
             ) : (
               <>
                 <Link to="/login">
-                  <Button variant="outline" size="sm">Login</Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-white border-white shadow-none hover:text-white px-4 py-2 text-sm w-auto"
+                  >
+                    Login
+                  </Button>
                 </Link>
+
                 <Link to="/signup">
-                  <Button variant="primary" size="sm">Sign Up</Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    className="custom-signup-button px-4 py-2 text-white rounded-md text-sm whitespace-nowrap shadow-none w-auto"
+                  >
+                    Sign Up
+                  </Button>
                 </Link>
+
               </>
             )}
           </div>
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden p-2 rounded-md text-foreground"
+            className="md:hidden p-2 rounded-md text-white"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -117,17 +138,15 @@ const Navbar = () => {
 
         {/* Mobile menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden pt-4 pb-3 border-t mt-3 animate-fade-in">
+          <div className="md:hidden pt-4 pb-3 border-t mt-3 bg-black text-white animate-fade-in">
             <ul className="flex flex-col space-y-4 mb-6">
               {navLinks.map((link) => (
                 <li key={link.name}>
                   <Link
                     to={link.path}
-                    onClick={() => setIsMobileMenuOpen(false)} // ✅ Close menu on click
+                    onClick={() => setIsMobileMenuOpen(false)}
                     className={`text-sm font-medium block transition-colors ${
-                      isActive(link.path)
-                        ? "text-uniplus-600 font-semibold"
-                        : "text-foreground/80 hover:text-foreground"
+                      isActive(link.path) ? "font-semibold underline" : "hover:opacity-80"
                     }`}
                   >
                     {link.name}
@@ -142,21 +161,23 @@ const Navbar = () => {
                 <>
                   {isAdmin && (
                     <Link to="/admin" className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
-                      <Button variant="outline" size="sm" className="w-full">Admin</Button>
+                      <Button variant="outline" size="sm" className="w-full text-white border-white">Admin</Button>
                     </Link>
                   )}
-                  <div className="text-sm font-medium">{user?.name || "User"}</div>
-                  <Button variant="outline" size="sm" onClick={logout}>
+                  <div className="text-sm font-medium text-white">{user?.name || "User"}</div>
+                  <Button variant="outline" size="sm" onClick={logout} className="text-white border-white">
                     Logout
                   </Button>
                 </>
               ) : (
                 <>
                   <Link to="/login" className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
-                    <Button variant="outline" size="sm" className="w-full">Login</Button>
+                    <Button variant="outline" size="sm" className="w-full text-white border-white">Login</Button>
                   </Link>
                   <Link to="/signup" className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
-                    <Button variant="primary" size="sm" className="w-full">Sign Up</Button>
+                    <Button variant="primary" size="sm" className="w-full text-white bg-white/20 hover:bg-white/30">
+                      Sign Up
+                    </Button>
                   </Link>
                 </>
               )}
