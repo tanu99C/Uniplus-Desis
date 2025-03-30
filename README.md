@@ -32,12 +32,12 @@
 
 ### **Step 1:** Clone the Repository
 ```bash
- git clone <repository-url>
+ git clone https://github.com/tanu99C/Uniplus-Desis.git
 ```
 
 ### **Step 2:** Navigate into the Project Directory
 ```bash
- cd uniplus
+ cd Uniplus-Desis
 ```
 
 ### **Step 3:** Install Dependencies
