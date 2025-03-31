@@ -386,7 +386,7 @@ button {
 
 .market-modal-form{
   position: absolute;
-  top: 20%;
+  top: 30%;
   left: 50%;
   transform: translate(-50%, -50%);
   background: rgb(243, 239, 239);
