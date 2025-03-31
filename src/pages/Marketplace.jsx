@@ -355,7 +355,7 @@ useEffect(() => {
             <input type="file" onChange={handleImageChange} disabled={isSubmitting} />
             <label><input type="checkbox" checked={formData.isBidding} onChange={(e) => setFormData({ ...formData, isBidding: e.target.checked })} disabled={isSubmitting} /> Enable Bidding</label>
             {formData.isBidding && <input type="date" placeholder="Bidding Ends On" onChange={(e) => setFormData({ ...formData, biddingEnds: e.target.value })} value={formData.biddingEnds} disabled={isSubmitting} />}
-            <button onClick={handleAddItem} disabled={isSubmitting} className="submit-button">{isSubmitting ? "Submitting..." : "Submit"}</button>
+            <button onClick={handleAddItem} disabled={isSubmitting} className="custom-submit-button"><span className="custom-button-text">{isSubmitting ? "Submitting..." : "Submit"}</span></button>
             </div>
         )}
 

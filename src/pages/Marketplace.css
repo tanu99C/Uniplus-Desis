@@ -386,7 +386,7 @@ button {
 
 .market-modal-form{
   position: absolute;
-  top: 10%;
+  top: 20%;
   left: 50%;
   transform: translate(-50%, -50%);
   background: rgb(243, 239, 239);
@@ -428,6 +428,36 @@ button {
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 6px;
   color: rgb(2, 1, 10);
+}
+.custom-submit-button {
+  background: linear-gradient(45deg, #0ea5e9, #2563eb);
+  color: rgb(250, 249, 249);
+  padding: 14px 22px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+  display: block;
+  margin: 20px auto;
+  box-shadow: 0 0 10px rgba(14, 165, 233, 0.5);
+  margin-left: auto;
+  flex-shrink: 0;
+  width: 150px; /* Fixed width to prevent size change */
+  text-align: center;
+}
+
+.custom-submit-button:hover {
+  background: linear-gradient(45deg, #2563eb, #0ea5e9);
+  box-shadow: 0 0 15px rgba(14, 165, 233, 0.8);
+  transform: scale(1.05);
+}
+
+.custom-button-text {
+  display: inline-block;
+  width: 100%;
+  text-align: center;
 }
 
 .email-modal-overlay {
