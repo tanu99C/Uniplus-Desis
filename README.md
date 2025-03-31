@@ -23,9 +23,10 @@ Uniplus is an all-in-one platform designed to address various student needs with
 - **Buy & Sell**: A platform for students to trade books, gadgets, and other essentials.
 - **Dynamic Listings**: Users can post product details and images.
 
-### 📚 **Resources**
+### 📚 **Resources & Notes**
 - **Access Shared Resources**: A repository of academic materials.
 - **Upload & Download**: Students can share and access PDFs, notes, and past papers.
+- **Previous Year Question Papers (PYQ)**: Provides easy access to past exam papers for academic reference.
 
 ---
 
