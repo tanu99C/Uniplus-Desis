@@ -1,6 +1,7 @@
 # **Uniplus** 🚀
 
-**Uniplus** is a **college socialization platform** designed to connect students seamlessly. It features a **dynamic Sign-Up & Login system** powered by **Firebase Authentication** and a **real-time database** for user interactions.
+## **Project Overview**
+Uniplus is an all-in-one platform designed to address various student needs within a college environment. It offers a seamless interface for managing announcements, buying and selling items, tracking lost and found belongings, and sharing academic resources. Built with Firebase Firestore, the platform ensures secure, real-time data management while maintaining a user-friendly experience. Future enhancements may include a search feature, chat integration, and classroom reservations for faculty.
 
 ---
 
@@ -25,6 +26,14 @@
 ### 📚 **Resources**
 - **Access Shared Resources**: A repository of academic materials.
 - **Upload & Download**: Students can share and access PDFs, notes, and past papers.
+
+---
+
+## **👨‍💻 Developers**
+- **Tanu Shree**
+- **Suhani Goyal**
+- **Rupanshi Goel**
+- **Tanya Pattnaik**
 
 ---
 
@@ -54,7 +63,6 @@
 Visit **[http://localhost:3000/](http://localhost:3000/)** to see **Uniplus** in action! 🌐
 
 ---
-
 
 ## **📞 Contact**
 For any questions or feedback, reach out to us at **[support@uniplus.com](mailto:support@uniplus.com)**.
