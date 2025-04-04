@@ -1,20 +1,26 @@
+# Build outputs
+dist/
 
-# Compiled JavaScript files
-lib/**/*.js
-lib/**/*.js.map
+# Firebase project settings
+.firebase/
+
+# GitHub Actions workflows (optional to ignore)
+.github/workflows/
+
+# Node.js dependency directory
+node_modules/
+src/node_modules/
+functions/
+
+# Local environment and temp files
+*.local
+*.log
+firebase-debug.log
+.expo
 
 # TypeScript v1 declaration files
 typings/
 
-# Node.js dependency directory
-node_modules/
-*.local
-functions/
-
-# Ignore all log files
-*.log
-firebase-debug.log
-
-# Ignore temporary files inside src
-src/node_modules/
-.expo
+# Compiled JavaScript files
+lib/**/*.js
+lib/**/*.js.map
