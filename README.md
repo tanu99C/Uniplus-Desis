@@ -4,7 +4,13 @@
 Uniplus is an all-in-one platform designed to address various student needs within a college environment. It offers a seamless interface for managing announcements, buying and selling items, tracking lost and found belongings, and sharing academic resources. Built with Firebase Firestore, the platform ensures secure, real-time data management while maintaining a user-friendly experience. Future enhancements may include a search feature, chat integration, and classroom reservations for faculty.
 
 ---
+# 🚀🚀🚀 LIVE NOW: [🌐 Click to Visit UniPlus](https://eduform-ffd1d.web.app) 🚀🚀🚀
 
+> ⚡ **Experience UniPlus in action! Fully deployed and live on Firebase Hosting.**  
+> 📲 Access it anywhere, anytime from the link above!
+> 👨‍💻 Deployed using firebase-hosting
+
+---
 ## **✨ Features**
 
 ### 🔑 **Authentication**
